@@ -4,7 +4,6 @@ WORKDIR /app
 
 # Copy only pom first to leverage Docker cache
 COPY pom.xml /app/pom.xml
-admin-movies-service
 COPY admin-movies-service/pom.xml /app/admin-movies-service/pom.xml
 
 RUN mvn -q -B -f /app/admin-movies-service/pom.xml -DskipTests dependency:go-offline
