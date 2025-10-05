@@ -1,0 +1,114 @@
+# API Gateway - Routes requests to microservices
+server:
+  port: 9000
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      # Auto-discover services from Eureka
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      # Define specific routes with resilience patterns
+      routes:
+        - id: admin-movies-service
+          uri: lb://admin-movies-service # lb:// = load balancer protocol, uses service discovery to find order-service instances
+          predicates:
+            - Path=/api/movies/**,/api/movieshowtimes/**, /api/movieshowtimes/auditoriums/**, /api/movieshowtimes/movies/**, /api/movies/uploads/**, /api/auditoriums/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: admin-movies-cb
+                fallbackUri: forward:/fallback/movieslist  # Redirects to fallback when circuit opens
+            - name: CircuitBreaker
+              args:
+                name: admin-movieshowtimes-cb
+                fallbackUri: forward:/fallback/movieshowtimes
+            - name: CircuitBreaker
+              args:
+                name: admin-movieshowtimes-auditoriums-cb
+                fallbackUri: forward:/fallback/movieshowtimes/auditoriums
+            - name: CircuitBreaker
+              args:
+                name: admin-movieshowtimes-movies-cb
+                fallbackUri: forward:/fallback/movieshowtimes/movies
+            - name: CircuitBreaker
+              args:
+                name: admin-auditoriums-cb
+                fallbackUri: forward:/fallback/auditoriums
+            - name: CircuitBreaker
+              args:
+                name: admin-movies-uploads-cb
+                fallbackUri: forward:/fallback/movies/uploads
+        - id: ticket-booking-service
+          uri: lb://ticket-booking-service  # lb:// = load balancer protocol, uses service discovery to find order-service instances
+          predicates:
+            - Path=/api/bookings/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: ticket-booking-cb
+                fallbackUri: forward:/fallback/bookings  # Redirects to fallback when circuit opens
+        - id: ticket-pricing-service
+          uri: lb://ticket-pricing-service  # lb:// = load balancer protocol, uses service discovery to find pricing-service instances
+          predicates:
+            - Path=/api/pricecalculator/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: ticket-pricing-cb
+                fallbackUri: forward:/fallback/pricecalculator  # Redirects to fallback when circuit opens
+
+# Service discovery configuration
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+# Circuit breaker defaults
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        failureRateThreshold: 50    # Circuit opens when 50%+ of calls fail
+        waitDurationInOpenState: 10s # How long to wait before testing if service recovered
+        # After 30 seconds, circuit goes to HALF-OPEN state
+        # and makes one test call to check service health
+        minimumNumberOfCalls: 5      # Need at least 5 calls before circuit can open
+        slidingWindowSize: 10        # Evaluate failure rate over last 10 calls
+    instances:
+      admin-movies-cb:
+        base-config: default
+      admin-movieshowtimes-cb:
+        base-config: default
+      admin-auditoriums-cb:
+        base-config: default
+      admin-movies-uploads-cb:
+        base-config: default
+      admin-movieshowtimes-auditoriums-cb:
+        base-config: default
+      admin-movieshowtimes-movies-cb:
+        base-config: default
+      ticket-booking-cb:
+        base-config: default
+      ticket-pricing-cb:
+        base-config: default
+
+# Health monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"    # Expose all actuator endpoints for debugging
+          # /actuator/health - Shows if gateway is healthy
+          # /actuator/circuitbreakers - Shows circuit breaker states (admin-movies-cb, admin-auditoriums-cb,
+          #                                   admin-movieshowtimes-auditoriums-cb, admin-movieshowtimes-movies-cb,
+          #                                   admin-movieshowtimes-cb, ticket-booking-cb, ticket-pricing-cb)
+          # /actuator/mappings - Shows all route mappings and handlers
+          # /actuator/serviceregistry - Shows Eureka service registration info
+          # /actuator/circuitbreakerevents - Shows circuit breaker event history
+        # /actuator/metrics - Shows application metrics
+        # Useful for monitoring, debugging, and load balancer health checks

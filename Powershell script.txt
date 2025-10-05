@@ -1,0 +1,36 @@
+1) Start Eureka (8761)
+Open new powershell and change folder to C:\Users\ritet\OneDrive\Documents\Coding\Caltech\FSD bootcamp\course 5\nmscinemas-ticketing-microservices
+Run the following command
+
+mvn -q -B -f .\eureka-server\pom.xml spring-boot:run
+
+2) Start ticket-pricing-service
+Open new powershell and change folder to C:\Users\ritet\OneDrive\Documents\Coding\Caltech\FSD bootcamp\course 5\nmscinemas-ticketing-microservices
+Run the following command
+
+$env:EUREKA_URL = "http://localhost:8761/eureka/"
+mvn -q -B -f .\eureka-server\pom.xml spring-boot:run
+
+3) Start ticket-booking-service (if it also uses SQLite)
+Open new powershell and change folder to C:\Users\ritet\OneDrive\Documents\Coding\Caltech\FSD bootcamp\course 5\nmscinemas-ticketing-microservices
+Run the following commands
+
+$env:DB_PATH = (Resolve-Path .\data\nms-movies-ticketing.db).Path -replace '\\','/'
+$env:EUREKA_URL = "http://localhost:8761/eureka/"
+mvn -q -B -f .\ticket-booking-service\pom.xml spring-boot:run
+
+4) Start admin-movies-service (9005)
+Open new powershell and change folder to C:\Users\ritet\OneDrive\Documents\Coding\Caltech\FSD bootcamp\course 5\nmscinemas-ticketing-microservices
+Run the following commands
+
+$env:DB_PATH = (Resolve-Path .\data\nms-movies-ticketing.db).Path -replace '\\','/'
+$env:EUREKA_URL = "http://localhost:8761/eureka/"
+mvn -q -B -f .\admin-movies-service\pom.xml spring-boot:run
+
+5) Start api-gateway (9000)
+Open new powershell and change folder to C:\Users\ritet\OneDrive\Documents\Coding\Caltech\FSD bootcamp\course 5\nmscinemas-ticketing-microservices
+Run the following commands
+
+$env:EUREKA_URL = "http://localhost:8761/eureka/"
+mvn -q -B -f .\api-gateway\pom.xml spring-boot:run
+

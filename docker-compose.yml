@@ -1,0 +1,79 @@
+version: "3.9"
+services:
+  eureka:
+    image: gayathritdocker/eureka-server:1.0
+    build:
+      context: ./eureka-server
+    ports:
+      - "8761:8761"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8761/"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  api-gateway:
+    image: gayathritdocker/api-gateway:1.0
+    build:
+      context: ./api-gateway
+    depends_on:
+      eureka:
+        condition: service_healthy
+    ports:
+      - "9000:9000"
+    environment:
+      EUREKA_URL: http://eureka:8761/eureka/
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:9000/actuator/health"]
+
+  admin-movies-service:
+    image: gayathritdocker/admin-movies-service:1.0
+    build:
+      context: ./admin-movies-service
+    depends_on:
+      eureka:
+        condition: service_healthy
+    environment:
+      EUREKA_URL: http://eureka:8761/eureka/
+    ports:
+      - "9005:9005"
+    volumes:
+      # if using SQLite:
+      - moviesdb:/data
+    # example if your app reads DB file from /data:
+    # environment:
+    #   - DB_PATH=/data/nms-movies-ticketing.db
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:9005/actuator/health"]
+
+  ticket-booking-service:
+    image: gayathritdocker/ticket-booking-service:1.0
+    build:
+      context: ./ticket-booking-service
+    depends_on:
+      eureka:
+        condition: service_healthy
+    environment:
+      EUREKA_URL: http://eureka:8761/eureka/
+      TICKET_CALCULATOR_URL: http://ticket-price-calculator-service:9004/api/pricecalculator/calculate
+    ports:
+      - "9003:9003"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:9003/actuator/health"]
+
+  ticket-price-calculator-service:
+    image: gayathritdocker/ticket-price-calculator-service:1.0
+    build:
+      context: ./ticket-price-calculator-service
+    depends_on:
+      eureka:
+        condition: service_healthy
+    environment:
+      EUREKA_URL: http://eureka:8761/eureka/
+    ports:
+      - "9004:9004"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:9004/actuator/health"]
+
+volumes:
+  moviesdb:

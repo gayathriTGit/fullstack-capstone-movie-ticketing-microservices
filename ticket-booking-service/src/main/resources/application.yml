@@ -1,0 +1,24 @@
+# Movie ticket booking service
+server:
+  port: 9003
+spring:
+  application:
+    name: ticket-booking-service
+  datasource:
+    url: jdbc:sqlite:${DB_PATH:/data/nms-movies-ticketing.db}
+# Service discovery
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+# Health monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+ticket-calculator:
+  service-url: "http://ticket-pricing-service/api/pricecalculator/calculate"
