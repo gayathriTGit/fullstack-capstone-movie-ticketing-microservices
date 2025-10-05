@@ -10,7 +10,7 @@ RUN mvn -q -B -f /app/api-gateway/pom.xml -DskipTests dependency:go-offline
 
 
 # Copy sources and build
-COPY eureka-server/src /app/api-gateway/src
+COPY api-gateway/src /app/api-gateway/src
 RUN mvn -q -B -f /app/api-gateway/pom.xml -DskipTests package
 
 # Stage 2: Create the image

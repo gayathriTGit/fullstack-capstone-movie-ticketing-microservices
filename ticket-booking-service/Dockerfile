@@ -9,7 +9,7 @@ COPY ticket-booking-service/pom.xml /app/ticket-booking-service/pom.xml
 RUN mvn -q -B -f /app/ticket-booking-service/pom.xml -DskipTests dependency:go-offline
 
 # Copy sources and build
-COPY eureka-server/src /app/ticket-booking-service/src
+COPY ticket-booking-service/src /app/ticket-booking-service/src
 RUN mvn -q -B -f /app/ticket-booking-service/pom.xml -DskipTests package
 
 # Stage 2: Create the image

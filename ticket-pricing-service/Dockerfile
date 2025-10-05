@@ -19,6 +19,6 @@ WORKDIR /app
 # For healthchecks (compose or Dockerfile)
 RUN apk add --no-cache curl
 
-COPY --from=build /app/eureka-server/target/*.jar /app/app.jar
+COPY --from=build /app/ticket-pricing-service/target/*.jar /app/app.jar
 EXPOSE 9004
 ENTRYPOINT ["sh","-c","java $JAVA_OPTS -jar /app/app.jar"]
