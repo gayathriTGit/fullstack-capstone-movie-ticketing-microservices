@@ -3,7 +3,8 @@ services:
   eureka:
     image: gayathritdocker/eureka-server:1.0
     build:
-      context: ./eureka-server
+      context: .
+      dockerfile: eureka-server/Dockerfile
     ports:
       - "8761:8761"
     healthcheck:
@@ -15,7 +16,8 @@ services:
   api-gateway:
     image: gayathritdocker/api-gateway:1.0
     build:
-      context: ./api-gateway
+      context: .
+      dockerfile: api-gateway/Dockerfile
     depends_on:
       eureka:
         condition: service_healthy
@@ -29,7 +31,8 @@ services:
   admin-movies-service:
     image: gayathritdocker/admin-movies-service:1.0
     build:
-      context: ./admin-movies-service
+      context: .
+      dockerfile: admin-movies-service/Dockerfile
     depends_on:
       eureka:
         condition: service_healthy
@@ -46,25 +49,11 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:9005/actuator/health"]
 
-  ticket-booking-service:
-    image: gayathritdocker/ticket-booking-service:1.0
-    build:
-      context: ./ticket-booking-service
-    depends_on:
-      eureka:
-        condition: service_healthy
-    environment:
-      EUREKA_URL: http://eureka:8761/eureka/
-      TICKET_CALCULATOR_URL: http://ticket-price-calculator-service:9004/api/pricecalculator/calculate
-    ports:
-      - "9003:9003"
-    healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://localhost:9003/actuator/health"]
-
-  ticket-price-calculator-service:
+  ticket-pricing-service:
     image: gayathritdocker/ticket-price-calculator-service:1.0
     build:
-      context: ./ticket-price-calculator-service
+      context: .
+      dockerfile: ticket-pricing-service/Dockerfile
     depends_on:
       eureka:
         condition: service_healthy
@@ -74,6 +63,23 @@ services:
       - "9004:9004"
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:9004/actuator/health"]
+
+  ticket-booking-service:
+    image: gayathritdocker/ticket-booking-service:1.0
+    build:
+      context: .
+      dockerfile: ticket-booking-service/Dockerfile
+    depends_on:
+      eureka:
+        condition: service_healthy
+    environment:
+      EUREKA_URL: http://eureka:8761/eureka/
+      TICKET_CALCULATOR_URL: http://ticket-pricing-service:9004/api/pricecalculator/calculate
+    ports:
+      - "9003:9003"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:9003/actuator/health"]
+
 
 volumes:
   moviesdb:
