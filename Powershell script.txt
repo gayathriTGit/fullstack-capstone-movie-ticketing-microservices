@@ -9,7 +9,7 @@ Open new powershell and change folder to C:\Users\ritet\OneDrive\Documents\Codin
 Run the following command
 
 $env:EUREKA_URL = "http://localhost:8761/eureka/"
-mvn -q -B -f .\eureka-server\pom.xml spring-boot:run
+mvn -q -B -f .\ticket-pricing-service\pom.xml spring-boot:run
 
 3) Start ticket-booking-service (if it also uses SQLite)
 Open new powershell and change folder to C:\Users\ritet\OneDrive\Documents\Coding\Caltech\FSD bootcamp\course 5\nmscinemas-ticketing-microservices
