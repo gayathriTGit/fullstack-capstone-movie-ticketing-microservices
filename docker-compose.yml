@@ -41,11 +41,9 @@ services:
     ports:
       - "9005:9005"
     volumes:
-      # if using SQLite:
-      - moviesdb:/data
-    # example if your app reads DB file from /data:
-    # environment:
-    #   - DB_PATH=/data/nms-movies-ticketing.db
+      - ./data:/data
+    environment:
+      DB_PATH: /data/nms-movies-ticketing.db    
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:9005/actuator/health"]
 
@@ -79,6 +77,10 @@ services:
       - "9003:9003"
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:9003/actuator/health"]
+    volumes:
+      - ./data:/data
+    environment:
+      DB_PATH: /data/nms-movies-ticketing.db    
 
 
 volumes:
