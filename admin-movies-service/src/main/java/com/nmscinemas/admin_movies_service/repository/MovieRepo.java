@@ -8,6 +8,6 @@ public interface MovieRepo {
     List<Movie> findAll();
     Movie findById(Long id);
     Movie add(Movie movie);
-    Movie update(Movie movie);
+    Movie update(Long id, Movie movie);
     void deleteById(Long id);
 }

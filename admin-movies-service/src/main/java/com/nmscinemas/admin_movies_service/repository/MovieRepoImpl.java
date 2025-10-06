@@ -73,11 +73,11 @@ public class MovieRepoImpl implements MovieRepo {
     }
 
     @Override
-    public Movie update(Movie movie){
+    public Movie update(Long id, Movie movie){
         String sql = "UPDATE Movies SET name = ?, length = ?, rating = ?, genre = ?, description = ?, " +
                      "      image = ?, releaseDate = ? WHERE id = ?";
         jdbcTemplate.update(sql, movie.getName(), movie.getLength(), movie.getRating(), movie.getGenre(),
-                            movie.getDescription(), movie.getImage(), movie.getReleaseDate(), movie.getId());
+                            movie.getDescription(), movie.getImage(), movie.getReleaseDate(), id);
         return movie;
     }
 

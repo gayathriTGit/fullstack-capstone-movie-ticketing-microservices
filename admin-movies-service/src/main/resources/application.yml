@@ -1,4 +1,4 @@
-# Movie Ticket Pricing Calculator Service (stateless)
+# Movie Admin Service (stateless)
 server:
   port: 9005
 
@@ -27,5 +27,5 @@ management:
 # where to store files (can be an absolute path, too)
 app:
   upload:
-    dir: uploads
+    dir: ${APP_UPLOAD_DIR:uploads}
 

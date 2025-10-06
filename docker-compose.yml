@@ -39,10 +39,12 @@ services:
     environment:
       EUREKA_URL: http://eureka:8761/eureka/
       DB_PATH: /data/nms-movies-ticketing.db    
+      APP_UPLOAD_DIR: /app/uploads
     ports:
       - "9005:9005"
     volumes:
       - ./data:/data
+      - ./data/uploads:/app/uploads
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:9005/actuator/health"]
 

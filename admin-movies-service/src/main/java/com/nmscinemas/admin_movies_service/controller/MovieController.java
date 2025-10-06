@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -49,7 +50,9 @@ public class MovieController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Movie> getMovieById(@PathVariable Long id) {
-        return ResponseEntity.ok(service.getMovieById(id));
+        Movie m = service.getMovieById(id);
+        return (m == null) ? ResponseEntity.status(HttpStatus.NOT_FOUND).build()
+                : ResponseEntity.ok(m);
     }
 
     @PostMapping
@@ -58,8 +61,8 @@ public class MovieController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Movie> updateMovie(@RequestBody Movie movie) {
-        return ResponseEntity.ok(service.updateMovie(movie));
+    public ResponseEntity<Movie> updateMovie(@PathVariable Long id, @RequestBody Movie movie) {
+        return ResponseEntity.ok(service.updateMovie(id, movie));
     }
 
     @DeleteMapping("/{id}")
@@ -69,7 +72,7 @@ public class MovieController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/upload")
+    @PostMapping(path = "/upload", consumes = "multipart/form-data")
     public ResponseEntity<?> upload(@RequestParam("file") MultipartFile file) throws IOException {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("error", "No file uploaded"));
@@ -102,6 +105,13 @@ public class MovieController {
                 "fileName", storedName,
                 "url", url
         ));
+    }
+
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // Map /uploads/** to the actual directory on disk
+        String absolutePath = Paths.get(uploadDir).toAbsolutePath().normalize().toString();
+        registry.addResourceHandler("/uploads/**")
+                .addResourceLocations("file:" + absolutePath + "/");
     }
 
     /*

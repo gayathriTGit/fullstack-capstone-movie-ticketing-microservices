@@ -14,35 +14,70 @@ spring:
           lower-case-service-id: true
       # Define specific routes with resilience patterns
       routes:
+        # --- Admin Movies API
         - id: admin-movies-service
           uri: lb://admin-movies-service # lb:// = load balancer protocol, uses service discovery to find order-service instances
           predicates:
-            - Path=/api/movies/**,/api/movieshowtimes/**, /api/movieshowtimes/auditoriums/**, /api/movieshowtimes/movies/**, /api/movies/uploads/**, /api/auditoriums/**
+            - Path=/api/movies/**, /api/movies/uploads/**
           filters:
             - name: CircuitBreaker
               args:
                 name: admin-movies-cb
                 fallbackUri: forward:/fallback/movieslist  # Redirects to fallback when circuit opens
+
+        # Movie showtimes
+        - id: admin-movieshowtimes-service
+          uri: lb://admin-movies-service # lb:// = load balancer protocol, uses service discovery to find order-service instances
+          predicates:
+            - Path=/api/movieshowtimes/**
+          filters:
             - name: CircuitBreaker
               args:
                 name: admin-movieshowtimes-cb
                 fallbackUri: forward:/fallback/movieshowtimes
+
+        # Showtimes by auditorium
+        - id: admin-movieshowtimes-auditoriums-service
+          uri: lb://admin-movies-service # lb:// = load balancer protocol, uses service discovery to find order-service instances
+          predicates:
+            - Path=/api/movieshowtimes/auditoriums/**
+          filters:
             - name: CircuitBreaker
               args:
                 name: admin-movieshowtimes-auditoriums-cb
                 fallbackUri: forward:/fallback/movieshowtimes/auditoriums
+
+        # Showtimes by movie
+        - id: admin-movieshowtimes-movies-service
+          uri: lb://admin-movies-service # lb:// = load balancer protocol, uses service discovery to find order-service instances
+          predicates:
+            - Path=/api/movieshowtimes/movies/**
+          filters:
             - name: CircuitBreaker
               args:
                 name: admin-movieshowtimes-movies-cb
                 fallbackUri: forward:/fallback/movieshowtimes/movies
+
+        # Admin auditoriums API
+        - id: admin-auditoriums-service
+          uri: lb://admin-movies-service # lb:// = load balancer protocol, uses service discovery to find order-service instances
+          predicates:
+            - Path=/api/auditoriums/**
+          filters:
             - name: CircuitBreaker
               args:
                 name: admin-auditoriums-cb
                 fallbackUri: forward:/fallback/auditoriums
-            - name: CircuitBreaker
-              args:
-                name: admin-movies-uploads-cb
-                fallbackUri: forward:/fallback/movies/uploads
+
+      # --- Public static uploads (NO /api prefix, NO CB) ---
+        - id: movies-uploads
+          uri: lb://admin-movies-service # lb:// = load balancer protocol, uses service discovery to find order-service instances
+          predicates:
+            - Path=/uploads/**
+          # No CircuitBreaker; keep static files simple
+          # No StripPrefix; we want /uploads/** to pass through as-is
+
+        # Other
         - id: ticket-booking-service
           uri: lb://ticket-booking-service  # lb:// = load balancer protocol, uses service discovery to find order-service instances
           predicates:
@@ -52,6 +87,7 @@ spring:
               args:
                 name: ticket-booking-cb
                 fallbackUri: forward:/fallback/bookings  # Redirects to fallback when circuit opens
+
         - id: ticket-pricing-service
           uri: lb://ticket-pricing-service  # lb:// = load balancer protocol, uses service discovery to find pricing-service instances
           predicates:
@@ -69,6 +105,7 @@ eureka:
       defaultZone:  ${EUREKA_URL:http://localhost:8761/eureka/}
     instance:
       prefer-ip-address: true
+
 # Circuit breaker defaults
 resilience4j:
   circuitbreaker:
@@ -85,13 +122,11 @@ resilience4j:
         base-config: default
       admin-movieshowtimes-cb:
         base-config: default
-      admin-auditoriums-cb:
-        base-config: default
-      admin-movies-uploads-cb:
-        base-config: default
       admin-movieshowtimes-auditoriums-cb:
         base-config: default
       admin-movieshowtimes-movies-cb:
+        base-config: default
+      admin-auditoriums-cb:
         base-config: default
       ticket-booking-cb:
         base-config: default
