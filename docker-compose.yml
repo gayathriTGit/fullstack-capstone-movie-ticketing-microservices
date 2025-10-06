@@ -38,12 +38,11 @@ services:
         condition: service_healthy
     environment:
       EUREKA_URL: http://eureka:8761/eureka/
+      DB_PATH: /data/nms-movies-ticketing.db    
     ports:
       - "9005:9005"
     volumes:
       - ./data:/data
-    environment:
-      DB_PATH: /data/nms-movies-ticketing.db    
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:9005/actuator/health"]
 
@@ -73,14 +72,13 @@ services:
     environment:
       EUREKA_URL: http://eureka:8761/eureka/
       TICKET_CALCULATOR_URL: http://ticket-pricing-service:9004/api/pricecalculator/calculate
+      DB_PATH: /data/nms-movies-ticketing.db    
     ports:
       - "9003:9003"
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:9003/actuator/health"]
     volumes:
       - ./data:/data
-    environment:
-      DB_PATH: /data/nms-movies-ticketing.db    
 
 
 volumes:
