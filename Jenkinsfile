@@ -12,6 +12,7 @@ pipeline {
         }
       
         stage('Build') {
+	    agent { label 'docker' }   // runs on the docker host
             steps {
                 sh '''
                 docker version
